@@ -1,64 +1,133 @@
 "use strict";
 
-// Generate a random choice for the computer
+const bodyEl = document.querySelector("body");
+const container = document.createElement("div");
+container.style.cssText = `
+  max-width: 65%;
+  height: 75vh; 
+  margin: 70px auto;
+  background: #000;
+  color: #fff;
+  font-family: "Roboto", san-serif;
+  font-size: 18px;
+  border-radius: 10px;
+  box-shadow: 1px 10px 4px #000;
+`;
+bodyEl.appendChild(container);
+
+const scoreBox = document.createElement("div");
+const scoreBoxEls = `
+  <p>Player: <span class='player-score'>0</span></p>
+  <p>Computer: <span class='computer-score'>0</span></p>
+`;
+scoreBox.innerHTML = scoreBoxEls;
+scoreBox.style.cssText = `
+  padding: 30px 50px;
+  margin-bottom: 20px;
+`;
+
+const buttons = document.createElement("div");
+const btns = `
+  <button class='btn'>ROCK</button>
+  <button class='btn'>PAPER</button>
+  <button class='btn'>SCISSORS</button>
+`;
+buttons.innerHTML = btns;
+buttons.style.cssText = `
+  max-width: 40%;
+  margin: 0 auto 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const choiceBox = document.createElement("div");
+const choiceText = `
+  <p>You choose <span class='player-choice'>ROCK</span></p>
+  <p>Computer choose <span class='computer-choice'>ROCK</span></p>
+  <p class='result'>It's a tie!<p>
+`;
+choiceBox.innerHTML = choiceText;
+choiceBox.style.cssText = `
+  font-size: 22px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+`;
+
+container.append(scoreBox, buttons, choiceBox);
+
+const buttonEls = document.querySelectorAll(".btn");
+buttonEls.forEach((btn) => {
+  btn.style.cssText = `
+    font-family: inherit;
+    font-size: 20px;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+`;
+});
+
+const resultEl = document.querySelector(".result");
+resultEl.style.cssText = `
+  padding: 10px 25px;
+`;
+
+const playerChoice = document.querySelector(".player-choice");
+const computerChoice = document.querySelector(".computer-choice");
+const playerScoreEl = document.querySelector(".player-score");
+const computerScoreEl = document.querySelector(".computer-score");
+
+let playerScore = 0;
+let computerScore = 0;
+const WIN_SCORE = 5;
+
+const getPlayerChoice = function (btn) {
+  playerChoice.textContent = btn.textContent;
+  return playerChoice.textContent;
+};
+
 const getComputerChoice = function () {
-  const index = Math.floor(Math.random() * 3);
-  const choice = "rps".at(index);
+  const choice = Math.floor(Math.random() * 3);
+  if (choice === 0) computerChoice.textContent = "ROCK";
+  else if (choice === 1) computerChoice.textContent = "PAPER";
+  else computerChoice.textContent = "SCISSORS";
 
-  if (choice === "r") return "rock";
-  else if (choice === "p") return "paper";
-  else return "scissors";
+  return computerChoice.textContent;
 };
 
-// Get human choice
-const getHumanChoice = function () {
-  return prompt(`Enter 'rock', 'paper', or 'scissors': `).toLowerCase();
-};
-
-// A single round of the game
-const playRound = function (humanChoice, computerChoice) {
+const playRound = function (playerChoice, computerChoice) {
   const win =
-    (humanChoice === "rock" && computerChoice === "scissors") ||
-    (humanChoice === "paper" && computerChoice === "rock") ||
-    (humanChoice === "scissors" && computerChoice === "paper");
-  const lose =
-    (computerChoice === "rock" && humanChoice === "scissors") ||
-    (computerChoice === "paper" && humanChoice === "rock") ||
-    (computerChoice === "scissors" && humanChoice === "paper");
+    (playerChoice === "ROCK" && computerChoice === "SCISSORS") ||
+    (playerChoice === "PAPER" && computerChoice === "ROCK") ||
+    (playerChoice === "SCISSORS" && computerChoice === "PAPER");
 
   if (win) {
-    console.log(`You won this round! ${humanChoice} beats ${computerChoice}`);
-    return `player`;
-  } else if (lose) {
-    console.log(`You lose this round! ${computerChoice} beats ${humanChoice}`);
-    return `computer`;
+    resultEl.textContent = `YOU WON`;
+    resultEl.style.background = "green";
+    playerScore++;
+    playerScoreEl.textContent = playerScore;
+  } else if (playerChoice === computerChoice) {
+    resultEl.textContent = `DRAW`;
+    resultEl.style.background = "#888";
   } else {
-    console.log(`This round is a tie!`);
-    return `tie`;
-  }
-};
-
-const playGame = function () {
-  let humanScore = 0;
-  let computerScore = 0;
-  let round = 1;
-
-  while (round <= 5) {
-    const humanChoice = getHumanChoice();
-    const computerChoice = getComputerChoice();
-    const result = playRound(humanChoice, computerChoice);
-
-    if (result === `player`) humanScore++;
-    else if (result === `computer`) computerScore++;
-
-    round++;
+    resultEl.textContent = `YOU LOSE`;
+    resultEl.style.background = "red";
+    computerScore++;
+    computerScoreEl.textContent = computerScore;
   }
 
-  if (humanScore > computerScore) {
-    console.log(`You won! ${humanScore} vs ${computerScore}`);
-  } else if (humanScore < computerScore) {
-    console.log(`You Lose! ${humanScore} vs ${computerScore}`);
-  } else console.log(`It's a tie`);
+  choiceBox.style.display = "flex";
 };
 
-playGame();
+buttonEls.forEach((btn) => {
+  btn.addEventListener("click", function () {
+    if (playerScore < WIN_SCORE && computerScore < WIN_SCORE) {
+      const playerChoice = getPlayerChoice(btn);
+      const computerChoice = getComputerChoice();
+      playRound(playerChoice, computerChoice);
+    }
+  });
+});
